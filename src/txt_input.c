@@ -30,6 +30,7 @@ int get_elem(int *matriz, int linha, int coluna){
 }
 
 void print_mat(int *matriz){
+    int posicao = 0;
     for(int i = 0; i < ALTURA; i++){
         for(int j = 0; j < LARGURA; j++){
             posicao = i * LARGURA + j;
