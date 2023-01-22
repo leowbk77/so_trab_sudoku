@@ -2,24 +2,26 @@
 #include <stdlib.h>
 #include "txt_input.h"
 
-int read_file(char *caminho, int *matriz){
+int *read_file(char *caminho){
     FILE *txt = NULL; // arquivo de dados
-    matriz = malloc(LARGURA * ALTURA * sizeof(int)); // aloca o espaco da matriz
+    int *matriz = malloc(LARGURA * ALTURA * sizeof(int)); // aloca o espaco da matriz
 
     if(matriz != NULL){
         txt = fopen(caminho, "r");
-        if(txt == NULL) return ERRO_ABERTURA_ARQUIVO;
+        if(txt == NULL) return NULL;
 
         int posicao = 0;
+        int valor = 0;
         for(int i = 0; i < ALTURA; i++){
             for(int j = 0; j < LARGURA; j++){
                 posicao = i * LARGURA + j;
-                fscanf(txt, "%d", &matriz[posicao]);
+                fscanf(txt, "%d", &valor);
+                matriz[posicao] = valor;
             }
         }
         fclose(txt);
-        return SUCESSO;
-    } else return FALHA_ALOCACAO_MATRIZ;
+        return matriz;
+    } else return NULL;
 }
 
 int get_elem(int *matriz, int linha, int coluna){
