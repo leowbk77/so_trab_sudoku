@@ -27,5 +27,7 @@ int *read_file(char *caminho);
 int get_elem(int *matriz, int linha, int coluna);
 // printa a matriz
 void print_mat(int *matriz);
+// limpa a matriz da memoria
+void free_mat(int *matriz);
 
 #endif

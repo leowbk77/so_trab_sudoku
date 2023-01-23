@@ -39,3 +39,9 @@ void print_mat(int *matriz){
         printf("\n");
     }
 }
+
+void free_mat(int *matriz){
+    if(matriz != NULL){
+        free(matriz);
+    }
+}
