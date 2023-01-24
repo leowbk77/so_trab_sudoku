@@ -10,7 +10,7 @@ int *read_file(char *caminho){
         txt = fopen(caminho, "r");
         if(txt == NULL){
             free(matriz);
-             return NULL;
+            return NULL;
         }
 
         int posicao = 0;

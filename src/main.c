@@ -4,8 +4,13 @@
 #include "txt_input.h"
 #include "main.h"
 
-// Parametros (ainda nao foi necessario)
-// provavelmente para os quadrantes
+// Globais
+
+int *matriz = NULL; // matriz acessivel a todas as threads
+int threads[11] = {0}; // iesimo indice = iesima thread // se ao fim da execucao estiver preenchido de 1`s entao o sudoku esta correto
+int correspondencias[] = {1,2,3,4,5,6,7,8,9}; // vetor de correspondecias para verificacao das linhas/colunas
+
+// Parametros
 struct parametros 
 {
     int linha;
@@ -31,13 +36,6 @@ void set_parametros(parametros *dados , int linha, int coluna, int thread){
     }
 }
 
-// Globais
-
-int *matriz = NULL; // matriz acessivel a todas as threads
-int threads[11] = {0}; // iesimo indice = iesima thread // se ao fim da execucao estiver preenchido de 1`s entao o sudoku esta correto
-
-int correspondencias[] = {1,2,3,4,5,6,7,8,9}; // vetor de correspondecias para verificacao das linhas/colunas
-
 /*
 • Um thread para verificar se cada coluna contém os dígitos 1 a 9; - FEITO
 • Um thread para verificar se cada linha contém os dígitos 1 a 9; - FEITO
@@ -48,7 +46,6 @@ int correspondencias[] = {1,2,3,4,5,6,7,8,9}; // vetor de correspondecias para v
 void *verifica_colunas(void *struct_parametros){
     parametros *dados = (parametros *) struct_parametros;
     int numeroDeCorrespondencias = 0;
-
     int iteradorCorrespondencias = 0;
     int elemento = 0;
 
@@ -82,7 +79,6 @@ void *verifica_colunas(void *struct_parametros){
 void *verifica_linhas(void *struct_parametros){
     parametros *dados = (parametros *) struct_parametros;
     int numeroDeCorrespondencias = 0;
-
     int iteradorCorrespondencias = 0;
     int elemento = 0;
 
@@ -113,18 +109,49 @@ void *verifica_linhas(void *struct_parametros){
 }
 
 // THREADS 3 A 11
-void *verifca_grade(void *struct_parametros){
+void *verifica_grade(void *struct_parametros){
     parametros *dados = (parametros *) struct_parametros;
+    // a logica tbm eh parecida mas vai ser verificado um quadrante menor (3x3) dentro do tabuleiro
+    // as vars de limite dizem até onde deve-se verificar com base nos parametros que foram passados
+    // para saber por onde comecar
+    int limiteDaColuna = dados->coluna + 3;
+    // o limite da linha já é feito dentro do for
 
-    threads[dados->numeroDaThread] = 0;
-    threads[dados->numeroDaThread] = 1;
+    int numeroDeCorrespondencias = 0;
+    int iteradorCorrespondencias = 0;
+    int elemento = 0;
+
+    int linha = dados->linha; // linha inicial
+
+    for(int i = 0; i < 3; i++){ // quadrante 3x3 (limite de linhas)
+        for(int j = dados->coluna; j < limiteDaColuna; j++){ // percorre a linha atual até o ultimo elemento do quadrante
+            elemento = get_elem(matriz, linha, j);
+            
+            while(iteradorCorrespondencias < 9){ // compara o elemento da linha com o vetor de correspondencias
+                if(elemento == correspondencias[iteradorCorrespondencias]){
+                    numeroDeCorrespondencias++; // se encontrar uma correspondencia contabiliza
+                }
+                iteradorCorrespondencias++; // percorre o vetor de correspondencias
+            }
+            iteradorCorrespondencias = 0; // reseta o iterador
+        }
+        linha = linha + 1; // pula pra proxima linha
+    }
+    
+    if(numeroDeCorrespondencias != 9){
+        // se o numero de correspondencias no quadrante for diferente de 9
+        // o quadrante esta errado
+        threads[dados->numeroDaThread] = 0;
+    } else threads[dados->numeroDaThread] = 1;
 }
 
 int main(int argc, char **argv){
     matriz = read_file(argv[1]);
     
     pthread_t threadTeste; // teste
-    parametros *parametrosTeste = aloca_parametros(0,0);// teste
+    pthread_t threadQuadrante; // teste
+
+    parametros *parametrosTeste = aloca_parametros(0, 3, THREAD_3);// teste quadrante 2
 
     if(matriz != NULL){ // se a leitura do txt ocorreu ok 
         // iniciar as threads e fazer o processamento do tabuleiro
@@ -134,7 +161,11 @@ int main(int argc, char **argv){
         print_mat(matriz);// teste
         printf("\n");// teste
         pthread_create(&threadTeste, NULL, verifica_colunas, (void *)parametrosTeste);// teste
+        // teste de quadrante 
+        pthread_create(&threadQuadrante, NULL, verifica_grade, (void *)parametrosTeste); // teste
+        // \teste de quadrante
         pthread_join(threadTeste, NULL);// teste
+        pthread_join(threadQuadrante, NULL);//teste
     }
     int i = 0;// teste
     printf("\n\nIndices 11: ");// teste
