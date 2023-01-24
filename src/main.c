@@ -115,17 +115,15 @@ void *verifica_grade(void *struct_parametros){
     // as vars de limite dizem até onde deve-se verificar com base nos parametros que foram passados
     // para saber por onde comecar
     int limiteDaColuna = dados->coluna + 3;
-    // o limite da linha já é feito dentro do for
+    int limiteDaLinha = dados->linha + 3;
 
     int numeroDeCorrespondencias = 0;
     int iteradorCorrespondencias = 0;
     int elemento = 0;
 
-    int linha = dados->linha; // linha inicial
-
-    for(int i = 0; i < 3; i++){ // quadrante 3x3 (limite de linhas)
+    for(int i = dados->linha; i < limiteDaLinha; i++){ // quadrante 3x3
         for(int j = dados->coluna; j < limiteDaColuna; j++){ // percorre a linha atual até o ultimo elemento do quadrante
-            elemento = get_elem(matriz, linha, j);
+            elemento = get_elem(matriz, i, j);
             
             while(iteradorCorrespondencias < 9){ // compara o elemento da linha com o vetor de correspondencias
                 if(elemento == correspondencias[iteradorCorrespondencias]){
@@ -135,7 +133,6 @@ void *verifica_grade(void *struct_parametros){
             }
             iteradorCorrespondencias = 0; // reseta o iterador
         }
-        linha = linha + 1; // pula pra proxima linha
     }
     
     if(numeroDeCorrespondencias != 9){
