@@ -141,13 +141,15 @@ void *verifica_grade(void *struct_parametros){
 }
 
 int main(int argc, char **argv){
-    matriz = read_file(argv[1]);
+    pthread_t trabalhadores[N_TRABALHADORES];
+    parametros *parametrosDosTrabalhadores[N_QUADRANTES];
 
+
+    /* ERRO DE SEGMENTACAO NA CRIACAO DAS THREADS - resolver*/
+
+    matriz = read_file(argv[1]); // le o arquivo de input
     if(matriz != NULL){ // se a leitura do txt ocorreu ok 
         // iniciar as threads e fazer o processamento do tabuleiro
-        pthread_t trabalhadores[N_TRABALHADORES];
-        parametros *parametrosDosTrabalhadores[N_QUADRANTES];
-
         // cria as duas primeiras threads que verificam linhas e colunas
         trabalhadores[THREAD_1] = pthread_create(&trabalhadores[THREAD_1], NULL, verifica_colunas, NULL);
         trabalhadores[THREAD_2] = pthread_create(&trabalhadores[THREAD_2], NULL, verifica_linhas, NULL);
@@ -174,10 +176,10 @@ int main(int argc, char **argv){
         print_mat(matriz);
     }
 
-    printf("Resultados dos testes (Threads): "); // printa os resultados das threads
-    printf("T1\tT2\tT3\tT4\tT5\tT6\tT7\tT8\tT9\tT10\tT11\n");
+    printf("Resultados dos testes (Threads):\n"); // printa os resultados das threads
+    printf("T1 T2 T3 T4 T5 T6 T7 T8 T9 T10 T11\n");
     for(int i = 0; i < N_TRABALHADORES; i++){
-        printf("%d\t", threads[i]);
+        printf(" %d ", threads[i]);
     }
     printf("\n");
 
