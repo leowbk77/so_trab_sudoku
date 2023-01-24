@@ -44,7 +44,6 @@ void set_parametros(parametros *dados , int linha, int coluna, int thread){
 
 // THREAD 1
 void *verifica_colunas(void *struct_parametros){
-    parametros *dados = (parametros *) struct_parametros;
     int numeroDeCorrespondencias = 0;
     int iteradorCorrespondencias = 0;
     int elemento = 0;
@@ -77,7 +76,6 @@ void *verifica_colunas(void *struct_parametros){
 
 // THREAD 2 - É a mesma logica de percorrer as colunas porém porcorre as linhas;
 void *verifica_linhas(void *struct_parametros){
-    parametros *dados = (parametros *) struct_parametros;
     int numeroDeCorrespondencias = 0;
     int iteradorCorrespondencias = 0;
     int elemento = 0;
@@ -144,38 +142,50 @@ void *verifica_grade(void *struct_parametros){
 
 int main(int argc, char **argv){
     matriz = read_file(argv[1]);
-    
-    pthread_t threadTeste; // teste
-    pthread_t threadQuadrante; // teste
-
-    parametros *parametrosTeste = aloca_parametros(0, 3, THREAD_3);// teste quadrante 2
 
     if(matriz != NULL){ // se a leitura do txt ocorreu ok 
         // iniciar as threads e fazer o processamento do tabuleiro
+        pthread_t trabalhadores[N_TRABALHADORES];
+        parametros *parametrosDosTrabalhadores[N_QUADRANTES];
 
-    
-    // ******TESTES*********
-        print_mat(matriz);// teste
-        printf("\n");// teste
-        pthread_create(&threadTeste, NULL, verifica_colunas, (void *)parametrosTeste);// teste
-        // teste de quadrante 
-        pthread_create(&threadQuadrante, NULL, verifica_grade, (void *)parametrosTeste); // teste
-        // \teste de quadrante
-        pthread_join(threadTeste, NULL);// teste
-        pthread_join(threadQuadrante, NULL);//teste
-    }
-    int i = 0;// teste
-    printf("\n\nIndices 11: ");// teste
-    while(i < 11){// teste
-        printf("%d ", threads[i]);// teste
-        i++;
-    }
-    printf("\n");// teste
+        // cria as duas primeiras threads que verificam linhas e colunas
+        trabalhadores[THREAD_1] = pthread_create(&trabalhadores[THREAD_1], NULL, verifica_colunas, NULL);
+        trabalhadores[THREAD_2] = pthread_create(&trabalhadores[THREAD_2], NULL, verifica_linhas, NULL);
 
-    // ******TESTES*********
+        // aloca os parametros dos trabalhadores com as coordenadas dos quadrantes
+        parametrosDosTrabalhadores[THREAD_3] = aloca_parametros(0,0, THREAD_3);
+        parametrosDosTrabalhadores[THREAD_4] = aloca_parametros(0,3, THREAD_4);
+        parametrosDosTrabalhadores[THREAD_5] = aloca_parametros(0,6, THREAD_5);
+        parametrosDosTrabalhadores[THREAD_6] = aloca_parametros(3,0, THREAD_6);
+        parametrosDosTrabalhadores[THREAD_7] = aloca_parametros(3,3, THREAD_7);
+        parametrosDosTrabalhadores[THREAD_8] = aloca_parametros(3,6, THREAD_8);
+        parametrosDosTrabalhadores[THREAD_9] = aloca_parametros(6,0, THREAD_9);
+        parametrosDosTrabalhadores[THREAD_10] = aloca_parametros(6,3, THREAD_10);
+        parametrosDosTrabalhadores[THREAD_11] = aloca_parametros(6,6, THREAD_11);
+
+        // cria as threads de trabalhadores dos quadrantes (comeca da thread3)
+        for(int i = 2; i < N_TRABALHADORES; i++){
+            trabalhadores[i] = pthread_create(&trabalhadores[i], NULL, verifica_grade, (void*)parametrosDosTrabalhadores[i]);
+        }
+        for(int i = 0; i < N_TRABALHADORES; i++){
+            pthread_join(trabalhadores[i], NULL);
+        }
+        //printa a matriz
+        print_mat(matriz);
+    }
+
+    printf("Resultados dos testes (Threads): "); // printa os resultados das threads
+    printf("T1\tT2\tT3\tT4\tT5\tT6\tT7\tT8\tT9\tT10\tT11\n");
+    for(int i = 0; i < N_TRABALHADORES; i++){
+        printf("%d\t", threads[i]);
+    }
+    printf("\n");
 
     // liberar a memoria alocada
-    free_mat(matriz);
-    free(parametrosTeste); // teste
+    free_mat(matriz); // libera a matriz
+    for(int i = 0; i < N_TRABALHADORES; i++){
+        free(parametrosDosTrabalhadores[i]);
+    }
+
     return 0;
 }

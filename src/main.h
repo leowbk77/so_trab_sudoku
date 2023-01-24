@@ -4,21 +4,35 @@
 /*
 *   DEFINES
 */
+#define N_TRABALHADORES 11
+#define N_QUADRANTES 9
 
 #define THREAD_1 0
 #define THREAD_2 1
 
-#define THREAD_3 2
-#define THREAD_4 3
-#define THREAD_5 4
-#define THREAD_6 5
-#define THREAD_7 6
-#define THREAD_8 7
-#define THREAD_9 8
-#define THREAD_10 9
-#define THREAD_11 10
+#define THREAD_3 0
+#define THREAD_4 1
+#define THREAD_5 2
+#define THREAD_6 3
+#define THREAD_7 4
+#define THREAD_8 5
+#define THREAD_9 6
+#define THREAD_10 7
+#define THREAD_11 8
 
 typedef struct parametros parametros; // definir dentro do .c
+
+/* posicoes de inicio dos quadrantes (linha/coluna)
+    Q1 (0,0)
+    Q2 (0,3)
+    Q3 (0,6)
+    Q4 (3,0)
+    Q5 (3,3)
+    Q6 (3,6)
+    Q7 (6,0)
+    Q8 (6,3)
+    Q9 (6,6)
+*/
 
 /*
 *   FUNCOES
