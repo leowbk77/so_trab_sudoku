@@ -15,9 +15,9 @@ typedef struct parametros parametros; // definir dentro do .c
 */
 
 // aloca a struct parametros que vao ser passados para as threads;
-parametros *aloca_parametros(int linha, int coluna);
+parametros *aloca_parametros(int linha, int coluna, int thread);
 // seta os parametros de uma struct já criada
-void set_parametros(parametros *dados , int linha, int coluna);
+void set_parametros(parametros *dados , int linha, int coluna, int thread);
 
 
 // verifica se uma coluna contém 1 a 9

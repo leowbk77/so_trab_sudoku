@@ -10,21 +10,24 @@ struct parametros
 {
     int linha;
     int coluna;
+    int numeroDaThread;
 };
 
-parametros *aloca_parametros(int linha, int coluna){
+parametros *aloca_parametros(int linha, int coluna, int thread){
     parametros *dados = (parametros *) malloc(sizeof(parametros));
     if(dados != NULL){
         dados->linha = linha;
         dados->coluna = coluna;
+        dados->numeroDaThread = thread;
         return dados;
     } else return NULL;
 }
 
-void set_parametros(parametros *dados , int linha, int coluna){
+void set_parametros(parametros *dados , int linha, int coluna, int thread){
     if(dados != NULL){
         dados->linha = linha;
         dados->coluna = coluna;
+        dados->numeroDaThread = thread;
     }
 }
 
@@ -112,7 +115,9 @@ void *verifica_linhas(void *struct_parametros){
 // THREADS 3 A 11
 void *verifca_grade(void *struct_parametros){
     parametros *dados = (parametros *) struct_parametros;
-    // a fazer
+
+    threads[dados->numeroDaThread] = 0;
+    threads[dados->numeroDaThread] = 1;
 }
 
 int main(int argc, char **argv){
