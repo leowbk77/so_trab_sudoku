@@ -8,7 +8,9 @@
 
 int *matriz = NULL; // matriz acessivel a todas as threads
 int threads[11] = {0}; // iesimo indice = iesima thread // se ao fim da execucao estiver preenchido de 1`s entao o sudoku esta correto
-int correspondencias[] = {1,2,3,4,5,6,7,8,9}; // vetor de correspondecias para verificacao das linhas/colunas
+
+//REMOVER DEPOIS DE CORRIGIR A LOGICA 
+int correspondencias[] = {1,2,3,4,5,6,7,8,9}; // vetor de correspondecias para verificacao das linhas/colunas // deixou de ser necessario
 
 // Parametros
 struct parametros 
@@ -28,14 +30,6 @@ parametros *aloca_parametros(int linha, int coluna, int thread){
     } else return NULL;
 }
 
-void set_parametros(parametros *dados , int linha, int coluna, int thread){
-    if(dados != NULL){
-        dados->linha = linha;
-        dados->coluna = coluna;
-        dados->numeroDaThread = thread;
-    }
-}
-
 /*
 • Um thread para verificar se cada coluna contém os dígitos 1 a 9; - FEITO
 • Um thread para verificar se cada linha contém os dígitos 1 a 9; - FEITO
@@ -44,14 +38,16 @@ void set_parametros(parametros *dados , int linha, int coluna, int thread){
 
 // THREAD 1
 void *verifica_colunas(void *struct_parametros){
-    int numeroDeCorrespondencias = 0;
+    int vetorDeCorrespondencias[9] = {0};
+    int numeroDeCorrespondencias = 0; // deixou de ser necessario (REMOVER junto com o vetor de correspondencias nas globais)
     int iteradorCorrespondencias = 0;
     int elemento = 0;
 
     for(int i = 0; i < ALTURA; i++){
         for(int j = 0; j < LARGURA; j++){ // percorre a coluna
             elemento = get_elem(matriz, j, i); // obtem o elemento atual da coluna
-
+            vetorDeCorrespondencias[elemento-1]++; // contabiliza quantas vezes um elemento apareceu na coluna (indc 0 corresponde ao n1)
+            /* ERRADO
             while(iteradorCorrespondencias < 9){ // compara o elemento da coluna com o vetor de correspondencias
                 if(elemento == correspondencias[iteradorCorrespondencias]){
                     numeroDeCorrespondencias++; // se encontrar uma correspondencia contabiliza
@@ -59,8 +55,17 @@ void *verifica_colunas(void *struct_parametros){
                 iteradorCorrespondencias++; // percorre o vetor de correspondencias
             }
             iteradorCorrespondencias = 0; // reseta o iterador
+            */
         }
-
+        while(iteradorCorrespondencias < 9){
+            if(vetorDeCorrespondencias[iteradorCorrespondencias] != 1){ // se um elemento apareceu mais de uma vez
+                threads[0] = 0; // uma coluna falhou no teste
+                pthread_exit(NULL); // existe uma coluna errada, retorna pois nao eh necessario continuar rodando
+            }
+            iteradorCorrespondencias++;
+        }
+        iteradorCorrespondencias = 0; // reseta o iterador
+        /* ERRADO
         if(numeroDeCorrespondencias != 9){
             // se o numero de correspondencias for diferente de 9
             // uma coluna nao contem os digitos corretos
@@ -68,6 +73,7 @@ void *verifica_colunas(void *struct_parametros){
             pthread_exit(NULL); // existe uma coluna errada, retorna pois nao eh necessario continuar rodando
         }
         numeroDeCorrespondencias = 0; // reseta as correspondencias para a prox linha
+        */
     }
     // se passou por todas as colunas e não deu return dentro do for
     // entao as colunas estao corretas e pode dar return com 1 (ok)
