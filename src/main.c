@@ -177,7 +177,7 @@ int main(int argc, char **argv){
         //printa a matriz
         print_mat(matriz);
         // printa os resultados das threads
-        printf("Resultados dos testes (Threads):\n"); 
+        printf("\nResultados dos testes (Threads):\n"); 
         printf("T1 T2 T3 T4 T5 T6 T7 T8 T9 T10 T11\n");
         for(int i = 0; i < N_TRABALHADORES; i++){
             printf(" %d ", threads[i]);
