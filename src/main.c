@@ -64,14 +64,14 @@ void *verifica_colunas(void *struct_parametros){
         if(numeroDeCorrespondencias != 9){
             // se o numero de correspondencias for diferente de 9
             // uma coluna nao contem os digitos corretos
-            threads[THREAD_1] = 0;
-            return NULL; // existe uma coluna errada, retorna pois nao eh necessario continuar rodando
+            threads[0] = 0;
+            pthread_exit(NULL); // existe uma coluna errada, retorna pois nao eh necessario continuar rodando
         }
         numeroDeCorrespondencias = 0; // reseta as correspondencias para a prox linha
     }
     // se passou por todas as colunas e não deu return dentro do for
     // entao as colunas estao corretas e pode dar return com 1 (ok)
-    threads[THREAD_1] = 1;
+    threads[0] = 1;
 }
 
 // THREAD 2 - É a mesma logica de percorrer as colunas porém porcorre as linhas;
@@ -96,17 +96,17 @@ void *verifica_linhas(void *struct_parametros){
         if(numeroDeCorrespondencias != 9){
             // se o numero de correspondencias for diferente de 9
             // uma linha nao contem os digitos corretos
-            threads[THREAD_2] = 0;
-            return NULL; // existe uma linha errada, retorna pois nao eh necessario continuar rodando
+            threads[1] = 0;
+            pthread_exit(NULL); // existe uma linha errada, retorna pois nao eh necessario continuar rodando
         }
         numeroDeCorrespondencias = 0; // reseta as correspondencias para a prox linha
     }
     // se passou por todas as linhas e não deu return dentro do for
     // entao as linhas estao corretas e pode dar return com 1 (ok)
-    threads[THREAD_2] = 1;
+    threads[1] = 1;
 }
 
-// THREADS 3 A 11
+// THREADS 3 A 11 (indices 2 ate 10)
 void *verifica_grade(void *struct_parametros){
     parametros *dados = (parametros *) struct_parametros;
     // a logica tbm eh parecida mas vai ser verificado um quadrante menor (3x3) dentro do tabuleiro
@@ -141,53 +141,53 @@ void *verifica_grade(void *struct_parametros){
 }
 
 int main(int argc, char **argv){
+    int retornoDoCreateThread;
     pthread_t trabalhadores[N_TRABALHADORES];
     parametros *parametrosDosTrabalhadores[N_QUADRANTES];
-
-
-    /* ERRO DE SEGMENTACAO NA CRIACAO DAS THREADS - resolver*/
 
     matriz = read_file(argv[1]); // le o arquivo de input
     if(matriz != NULL){ // se a leitura do txt ocorreu ok 
         // iniciar as threads e fazer o processamento do tabuleiro
-        // cria as duas primeiras threads que verificam linhas e colunas
-        trabalhadores[THREAD_1] = pthread_create(&trabalhadores[THREAD_1], NULL, verifica_colunas, NULL);
-        trabalhadores[THREAD_2] = pthread_create(&trabalhadores[THREAD_2], NULL, verifica_linhas, NULL);
-
         // aloca os parametros dos trabalhadores com as coordenadas dos quadrantes
-        parametrosDosTrabalhadores[THREAD_3] = aloca_parametros(0,0, THREAD_3);
-        parametrosDosTrabalhadores[THREAD_4] = aloca_parametros(0,3, THREAD_4);
-        parametrosDosTrabalhadores[THREAD_5] = aloca_parametros(0,6, THREAD_5);
-        parametrosDosTrabalhadores[THREAD_6] = aloca_parametros(3,0, THREAD_6);
-        parametrosDosTrabalhadores[THREAD_7] = aloca_parametros(3,3, THREAD_7);
-        parametrosDosTrabalhadores[THREAD_8] = aloca_parametros(3,6, THREAD_8);
-        parametrosDosTrabalhadores[THREAD_9] = aloca_parametros(6,0, THREAD_9);
-        parametrosDosTrabalhadores[THREAD_10] = aloca_parametros(6,3, THREAD_10);
-        parametrosDosTrabalhadores[THREAD_11] = aloca_parametros(6,6, THREAD_11);
+        parametrosDosTrabalhadores[0] = aloca_parametros(0,0, 2); // Q1
+        parametrosDosTrabalhadores[1] = aloca_parametros(0,3, 3); // Q2
+        parametrosDosTrabalhadores[2] = aloca_parametros(0,6, 4); // Q3
 
-        // cria as threads de trabalhadores dos quadrantes (comeca da thread3)
+        parametrosDosTrabalhadores[3] = aloca_parametros(3,0, 5); // Q4
+        parametrosDosTrabalhadores[4] = aloca_parametros(3,3, 6); // Q5
+        parametrosDosTrabalhadores[5] = aloca_parametros(3,6, 7); // Q6
+        
+        parametrosDosTrabalhadores[6] = aloca_parametros(6,0, 8); // Q7
+        parametrosDosTrabalhadores[7] = aloca_parametros(6,3, 9); // Q8
+        parametrosDosTrabalhadores[8] = aloca_parametros(6,6, 10);// Q9
+
+        // cria as duas primeiras threads que verificam linhas e colunas
+        retornoDoCreateThread = pthread_create(&trabalhadores[0], NULL, verifica_colunas, NULL);
+        retornoDoCreateThread = pthread_create(&trabalhadores[1], NULL, verifica_linhas, NULL);
+
+        // cria as threads de trabalhadores dos quadrantes (comeca da thread n3)
+        int j = 0; // iterador dos parametros
         for(int i = 2; i < N_TRABALHADORES; i++){
-            trabalhadores[i] = pthread_create(&trabalhadores[i], NULL, verifica_grade, (void*)parametrosDosTrabalhadores[i]);
-        }
+            retornoDoCreateThread = pthread_create(&trabalhadores[i], NULL, verifica_grade, (void*)parametrosDosTrabalhadores[j]);
+            j++;
+        }// join
         for(int i = 0; i < N_TRABALHADORES; i++){
             pthread_join(trabalhadores[i], NULL);
         }
         //printa a matriz
         print_mat(matriz);
+        // printa os resultados das threads
+        printf("Resultados dos testes (Threads):\n"); 
+        printf("T1 T2 T3 T4 T5 T6 T7 T8 T9 T10 T11\n");
+        for(int i = 0; i < N_TRABALHADORES; i++){
+            printf(" %d ", threads[i]);
+        }
+        printf("\n");
+        // liberar a memoria alocada
+        free_mat(matriz); // libera a matriz
+        for(int i = 0; i < N_QUADRANTES; i++){
+            free(parametrosDosTrabalhadores[i]); // libera os parametros
+        }
     }
-
-    printf("Resultados dos testes (Threads):\n"); // printa os resultados das threads
-    printf("T1 T2 T3 T4 T5 T6 T7 T8 T9 T10 T11\n");
-    for(int i = 0; i < N_TRABALHADORES; i++){
-        printf(" %d ", threads[i]);
-    }
-    printf("\n");
-
-    // liberar a memoria alocada
-    free_mat(matriz); // libera a matriz
-    for(int i = 0; i < N_TRABALHADORES; i++){
-        free(parametrosDosTrabalhadores[i]);
-    }
-
     return 0;
 }
