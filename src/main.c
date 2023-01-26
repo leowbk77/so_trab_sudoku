@@ -7,10 +7,8 @@
 // Globais
 
 int *matriz = NULL; // matriz acessivel a todas as threads
-int threads[11] = {0}; // iesimo indice = iesima thread // se ao fim da execucao estiver preenchido de 1`s entao o sudoku esta correto
-
-//REMOVER DEPOIS DE CORRIGIR A LOGICA 
-int correspondencias[] = {1,2,3,4,5,6,7,8,9}; // vetor de correspondecias para verificacao das linhas/colunas // deixou de ser necessario
+int threads[11] = {0}; // iesimo indice = iesima thread 
+// se ao fim da execucao estiver preenchido de 1`s entao o sudoku esta correto
 
 // Parametros
 struct parametros 
@@ -30,16 +28,9 @@ parametros *aloca_parametros(int linha, int coluna, int thread){
     } else return NULL;
 }
 
-/*
-• Um thread para verificar se cada coluna contém os dígitos 1 a 9; - FEITO
-• Um thread para verificar se cada linha contém os dígitos 1 a 9; - FEITO
-• Nove threads para verificar se cada uma das subgrades 3×3 elementos contém os dígitos 1 a 9. - A FAZER
-*/
-
 // THREAD 1
 void *verifica_colunas(void *struct_parametros){
     int vetorDeCorrespondencias[9] = {0};
-    int numeroDeCorrespondencias = 0; // deixou de ser necessario (REMOVER junto com o vetor de correspondencias nas globais)
     int iteradorCorrespondencias = 0;
     int elemento = 0;
 
@@ -47,33 +38,22 @@ void *verifica_colunas(void *struct_parametros){
         for(int j = 0; j < LARGURA; j++){ // percorre a coluna
             elemento = get_elem(matriz, j, i); // obtem o elemento atual da coluna
             vetorDeCorrespondencias[elemento-1]++; // contabiliza quantas vezes um elemento apareceu na coluna (indc 0 corresponde ao n1)
-            /* ERRADO
-            while(iteradorCorrespondencias < 9){ // compara o elemento da coluna com o vetor de correspondencias
-                if(elemento == correspondencias[iteradorCorrespondencias]){
-                    numeroDeCorrespondencias++; // se encontrar uma correspondencia contabiliza
-                }
-                iteradorCorrespondencias++; // percorre o vetor de correspondencias
-            }
-            iteradorCorrespondencias = 0; // reseta o iterador
-            */
         }
-        while(iteradorCorrespondencias < 9){
-            if(vetorDeCorrespondencias[iteradorCorrespondencias] != 1){ // se um elemento apareceu mais de uma vez
+
+        while(iteradorCorrespondencias < 9){ // verifica se a coluna contem os digitos de 1 a 9
+            if(vetorDeCorrespondencias[iteradorCorrespondencias] != 1){ // se um elemento nao apareceu ou apareceu mais de uma vez
                 threads[0] = 0; // uma coluna falhou no teste
                 pthread_exit(NULL); // existe uma coluna errada, retorna pois nao eh necessario continuar rodando
             }
             iteradorCorrespondencias++;
         }
         iteradorCorrespondencias = 0; // reseta o iterador
-        /* ERRADO
-        if(numeroDeCorrespondencias != 9){
-            // se o numero de correspondencias for diferente de 9
-            // uma coluna nao contem os digitos corretos
-            threads[0] = 0;
-            pthread_exit(NULL); // existe uma coluna errada, retorna pois nao eh necessario continuar rodando
+
+        while(iteradorCorrespondencias < 9){// reseta o vetor para a proxima coluna 
+            vetorDeCorrespondencias[iteradorCorrespondencias] = 0;            
+            iteradorCorrespondencias++;
         }
-        numeroDeCorrespondencias = 0; // reseta as correspondencias para a prox linha
-        */
+        iteradorCorrespondencias = 0; // reseta o iterador
     }
     // se passou por todas as colunas e não deu return dentro do for
     // entao as colunas estao corretas e pode dar return com 1 (ok)
@@ -82,30 +62,30 @@ void *verifica_colunas(void *struct_parametros){
 
 // THREAD 2 - É a mesma logica de percorrer as colunas porém porcorre as linhas;
 void *verifica_linhas(void *struct_parametros){
-    int numeroDeCorrespondencias = 0;
+    int vetorDeCorrespondencias[9] = {0};
     int iteradorCorrespondencias = 0;
     int elemento = 0;
 
     for(int i = 0; i < ALTURA; i++){
-        for(int j = 0; j < LARGURA; j++){
+        for(int j = 0; j < LARGURA; j++){ // percorre a linha
             elemento = get_elem(matriz, i, j); // obtem o elemento atual da linha
+            vetorDeCorrespondencias[elemento-1]++; // contabiliza quantas vezes um elemento apareceu na linha (indc 0 corresponde ao n1)
+        }
 
-            while(iteradorCorrespondencias < 9){ // compara o elemento da linha com o vetor de correspondencias
-                if(elemento == correspondencias[iteradorCorrespondencias]){
-                    numeroDeCorrespondencias++; // se encontrar uma correspondencia contabiliza
-                }
-                iteradorCorrespondencias++; // percorre o vetor de correspondencias
+        while(iteradorCorrespondencias < 9){ // verifica se a linha contem os digitos de 1 a 9
+            if(vetorDeCorrespondencias[iteradorCorrespondencias] != 1){ // se um elemento nao apareceu ou apareceu mais de uma vez
+                threads[1] = 0; // uma linha falhou no teste
+                pthread_exit(NULL); // existe uma linha errada, retorna pois nao eh necessario continuar rodando
             }
-            iteradorCorrespondencias = 0; // reseta o iterador
+            iteradorCorrespondencias++;
         }
+        iteradorCorrespondencias = 0; // reseta o iterador
 
-        if(numeroDeCorrespondencias != 9){
-            // se o numero de correspondencias for diferente de 9
-            // uma linha nao contem os digitos corretos
-            threads[1] = 0;
-            pthread_exit(NULL); // existe uma linha errada, retorna pois nao eh necessario continuar rodando
+        while(iteradorCorrespondencias < 9){// reseta o vetor para a proxima linha 
+            vetorDeCorrespondencias[iteradorCorrespondencias] = 0;            
+            iteradorCorrespondencias++;
         }
-        numeroDeCorrespondencias = 0; // reseta as correspondencias para a prox linha
+        iteradorCorrespondencias = 0; // reseta o iterador
     }
     // se passou por todas as linhas e não deu return dentro do for
     // entao as linhas estao corretas e pode dar return com 1 (ok)
@@ -121,29 +101,25 @@ void *verifica_grade(void *struct_parametros){
     int limiteDaColuna = dados->coluna + 3;
     int limiteDaLinha = dados->linha + 3;
 
-    int numeroDeCorrespondencias = 0;
+    int vetorDeCorrespondencias[9] = {0};
     int iteradorCorrespondencias = 0;
     int elemento = 0;
 
     for(int i = dados->linha; i < limiteDaLinha; i++){ // quadrante 3x3
         for(int j = dados->coluna; j < limiteDaColuna; j++){ // percorre a linha atual até o ultimo elemento do quadrante
-            elemento = get_elem(matriz, i, j);
-            
-            while(iteradorCorrespondencias < 9){ // compara o elemento da linha com o vetor de correspondencias
-                if(elemento == correspondencias[iteradorCorrespondencias]){
-                    numeroDeCorrespondencias++; // se encontrar uma correspondencia contabiliza
-                }
-                iteradorCorrespondencias++; // percorre o vetor de correspondencias
-            }
-            iteradorCorrespondencias = 0; // reseta o iterador
+            elemento = get_elem(matriz, i, j); // obtem o elemento
+            vetorDeCorrespondencias[elemento-1]++; // contabiliza quantas vezes o elemento apareceu no quadrante
         }
     }
     
-    if(numeroDeCorrespondencias != 9){
-        // se o numero de correspondencias no quadrante for diferente de 9
-        // o quadrante esta errado
-        threads[dados->numeroDaThread] = 0;
-    } else threads[dados->numeroDaThread] = 1;
+    while(iteradorCorrespondencias < 9){ // verifica se o quadrante contem os digitos de 1 a 9
+        if(vetorDeCorrespondencias[iteradorCorrespondencias] != 1){ // se um elemento nao apareceu ou apareceu mais de uma vez
+            threads[dados->numeroDaThread] = 0; // quadrante falhou no teste
+            pthread_exit(NULL); // quadrante está errado, termina a execucao da thread
+        }
+        iteradorCorrespondencias++;
+    }
+    threads[dados->numeroDaThread] = 1;
 }
 
 int main(int argc, char **argv){
