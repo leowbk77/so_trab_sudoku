@@ -8,6 +8,7 @@ int *read_file(char *caminho){
 
     if(matriz != NULL){
         txt = fopen(caminho, "r");
+        
         if(txt == NULL){
             free(matriz);
             return NULL;

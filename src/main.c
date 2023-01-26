@@ -124,6 +124,7 @@ void *verifica_grade(void *struct_parametros){
 
 int main(int argc, char **argv){
     int retornoDoCreateThread;
+    
     pthread_t trabalhadores[N_TRABALHADORES];
     parametros *parametrosDosTrabalhadores[N_QUADRANTES];
 
